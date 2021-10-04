@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    container_name: data_psql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./DATA/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+    ports:
+      - 5432
+  
+  app:
+    build: ./
+    image: psql_app:test
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    command: >
+      sh -c "pip3 install -r /app/requirements.txt
+      && python /app/run.py
+      && python /app/TEST/test.py
+      "
